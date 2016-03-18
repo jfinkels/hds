@@ -1,0 +1,386 @@
+%% hds.tex - the high and low degree subgraph problems are equivalent
+%%
+%% Copyright 2016 Jeffrey Finkelstein.
+%%
+%% This LaTeX markup document is made available under the terms of the Creative
+%% Commons Attribution-ShareAlike 4.0 International License,
+%% https://creativecommons.org/licenses/by-sa/4.0/.
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+%% This must come before hyperref.
+\usepackage{amsthm}
+%% This is strongly recommended by biblatex.
+\usepackage[english]{babel}
+\usepackage[backend=biber]{biblatex}
+\usepackage[T1]{fontenc}
+%% This must come before csquotes.
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+%% This is strongly recommended by biblatex.
+\usepackage{csquotes}
+%% This must come before hyperref.
+\usepackage{thmtools}
+%% This must come before complexity.
+\usepackage{hyperref}
+\usepackage{complexity}
+\usepackage[firstpage]{draftwatermark}
+\usepackage[final]{microtype}
+\usepackage{textcomp}
+
+%% Set the amount by which certain characters protrude into the margins.
+%%
+%% \LoadMicrotypeFile{cmr}
+%%
+%%     This command forces the built-in protrusion settings for the Computer
+%%     Modern Roman (cmr) font family to become available at this point, so
+%%     that we can override these settings on the next line. Even though we are
+%%     really using the Latin Modern Roman (lmr) fonts, microtype uses the cmr
+%%     configuration file.
+%%
+%% \SetProtrusion
+%%
+%%     This instructs the microtype package that we are going to modify the
+%%     protrusion settings.
+%%
+%% [load=lmr-T1]
+%%
+%%     Loads the Type 1 (T1) encoding of the lmr font family, thereby setting
+%%     the default protrusion values for all the characters. This is only
+%%     possible after the \LoadMicrotypeFile{cmr} command (microtype
+%%     essentially considers lmr to be an alias for cmr).
+%%
+%% {encoding=T1, family=lmr}
+%%
+%%     Indicates that we are going to modify the protrusion values for the T1
+%%     encoding of the lmr font family.
+%%
+%% \textquotedblright = {,1000} (and similar commands)
+%%
+%%     Force the character given by \textquotedblright to have default
+%%     protrusion on the left margin (given by an empty string before the
+%%     comma) and full protrusion (that is, protrusion value 1000) on the right
+%%     margin.
+\LoadMicrotypeFile{cmr}
+\SetProtrusion
+    [load=lmr-T1]
+    {encoding=T1, family=lmr}
+    {
+      \textquotedblright = {,1000},
+      \textquotedblleft = {1000,},
+      {'} = {,1000},
+      {,} = {,1000},
+      {:} = {,1000},
+      {;} = {,1000},
+      {.} = {,1000}
+    }
+
+%% Set the ``work-in-progress'' watermark for the first page.
+\SetWatermarkLightness{0.9}
+\SetWatermarkText{Work-in-progress}
+\SetWatermarkFontSize{3.5cm}
+
+%% Set the title and author of the PDF file.
+\hypersetup{pdftitle={High and low degree subgraph problems are equivalent}, pdfauthor={Jeffrey Finkelstein}}
+
+%% Declare the bibliography file.
+\addbibresource{hds.bib}
+
+%% Declare theorem-like environments.
+\declaretheorem[numberwithin=section]{theorem}
+\declaretheorem[numberlike=theorem]{lemma}
+\declaretheorem[numberlike=theorem]{corollary}
+\declaretheorem[numberlike=theorem, style=definition]{definition}
+
+%% Custom commands are declared here.
+\newcommand{\email}[1]{\textlangle\href{mailto:#1}{\nolinkurl{#1}}\textrangle}
+\newcommand{\todo}[1]{\textbf{TODO #1}}
+\newcommand{\dash}{\textnormal{-}}
+\newcommand{\pd}{p\dash}
+
+\DeclareMathOperator{\mindeg}{mindeg}
+\DeclareMathOperator{\maxdeg}{maxdeg}
+
+%% Redefine the footnote environment so it has no reference and no number.
+\long\def\symbolfootnote#1{\begingroup%
+\def\thefootnote{\fnsymbol{footnote}}\footnotetext{#1}\endgroup}
+
+%% Define the author, title, and date for the document.
+\author{Jeffrey~Finkelstein\\ Computer Science Department, Boston University}
+\title{High and low degree subgraph problems are equivalent}
+
+\begin{document}
+
+\maketitle
+
+\symbolfootnote{%
+  Copyright 2016 Jeffrey~Finkelstein \email{jeffreyf@bu.edu}.
+
+  This document is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License, which is available at \mbox{\url{https://creativecommons.org/licenses/by-sa/4.0/}}.
+  The \LaTeX{} markup that generated this document can be downloaded from its website at \mbox{\url{https://github.com/jfinkels/hds}}.
+  The markup is distributed under the same license.
+}
+
+%% Document content goes here.
+%
+% Global components at each level must follow this structure.
+%
+% % Foreword %
+%
+% %% Context (anyone - why now?) %%
+%
+% What is the current situation, and why is the need so important?
+%
+%
+% %% Need (readers - why you?) %%
+%
+% Why is this relevant to the reader, and why does something need to be done?
+% (Also reference relevant existing work.)
+%
+%
+% %% Task (author - why me?) %%
+%
+% What was undertaken to address the need?
+%
+%
+% %% Object (document - why this document?) %%
+%
+% What does this document cover?
+%
+%
+% % Summary %
+%
+% %% Findings (author - what?)
+%
+% What did the work reveal when performing the task?
+%
+%
+% %% Conclusion (readers - so what?)
+%
+% What did the findings mean for the audience?
+%
+%
+% %% Perspective (anyone - what now?)
+%
+% What should be done next?
+
+\section{Preliminaries}
+
+A (finite, simple, undirected) \emph{graph} $G$ is a finite set of vertices $V$ and a set of edges $E$ such that $E$ is a symmetric irreflexive binary relation on $V$.
+Sometimes $V(G)$ and $E(G)$ denote the vertex and edge sets of the graph $G$.
+The \emph{neighborhood} of a vertex $v$ in $G$, denoted $N_G(v)$, is the set of all vertices $u$ in $V \setminus \{v\}$ such that $(u, v) \in E$.
+The \emph{degree} of $v$ in $G$, denoted $\deg_G v$, is the cardinality of $N_G(v)$.
+For each subset $V'$ of $V$, the \emph{subgraph of $G$ induced by $V'$}, denoted $G[V']$, is the graph $(V', E')$, where $E' = \{ (u, v) \in E \, | \, u \in V' \text{ and } v \in V'\}$.
+Such a subgraph is called an \emph{induced subgraph}.
+(Contrast this with a ``subgraph'' which is a graph $(V', E'')$ in which $E''$ is any subset of $E'$ as defined for the subgraph induced by $V'$.)
+The \emph{complement of a graph} $G$, denoted $\overline{G}$, is the graph with vertex set $V$ and edge set $\overline{E}$ defined by
+\[
+\overline{E} = \{(u, v) \, | \, u, v \in V \text{ and } u \neq v \text{ and } (u, v) \notin E\}.
+\]
+The \emph{min-degree of a graph} $G$, denoted $\mindeg G$, is defined as $\min_{v \in V} \deg_{G} v$.
+The \emph{max-degree} is defined analogously.
+
+The min-degree and max-degree can be related via the complement graph.
+
+\begin{lemma}\label{lem:minmax}
+  Let $n$ and $d$ be natural numbers and let $G$ be a graph on $n$ vertices.
+  For each subset $S$ of $V(G)$,
+  \[
+  \mindeg G[S] \geq d \iff \maxdeg \overline{G}[S] \leq (|S| - 1) - d.
+  \]
+\end{lemma}
+\begin{proof}
+  For each $v \in S$,
+  \begin{align*}
+    \deg_{G[S]}(v) & = |N_{G[S]}(v)| \\
+    & = |\{ u \in S \setminus \{v\} \, | \, (u, v) \in E\}| \\
+    & = |\{ u \in S \setminus \{v\} \, | \, (u, v) \notin \overline{E}\}| \\
+    & = |(S \setminus \{v\}) \setminus \{ u \in S \setminus \{v\} \, | \, (u, v) \in \overline{E}\}| \\
+    & = |S \setminus \{v\}| - |\{ u \in S \setminus \{v\} \, | \, (u, v) \in \overline{E}\}| \\
+    & = (|S| - 1) - |N_{\overline{G}[S]}(v)| \\
+    & = (|S| - 1) - \deg_{\overline{G}[S]}(v).
+  \end{align*}
+  Therefore,
+  \begin{align*}
+    \mindeg G[S] \geq d & \iff \forall v \in S \deg_{G[S]}(v) \geq d \\
+    & \iff \forall v \in S \deg_{\overline{G}[S]}(v) \leq (|S| - 1) - d \\
+    & \iff \maxdeg \overline{G}[S] \leq (|S| - 1) - d. \qedhere
+  \end{align*}
+\end{proof}
+
+\section{Optimization problems}
+
+There are two natural single-objective optimization problems involving the min-degree and max-degree.
+
+\begin{definition}[Maximum high degree induced subgraph (\textsc{Max HDS})]
+  \mbox{} \\
+  \begin{tabular}{r p{9.5cm}}
+    \textbf{Instance:} & graph $G$. \\
+    \textbf{Solution:} & set of vertices $S$. \\
+    \textbf{Measure:} & $\mindeg G[S]$. \\
+    \textbf{Type:} & maximization.
+  \end{tabular}
+\end{definition}
+
+\begin{definition}[Minimum low degree induced subgraph (\textsc{Min LDS})]
+  \mbox{} \\
+  \begin{tabular}{r p{9.5cm}}
+    \textbf{Instance:} & graph $G$. \\
+    \textbf{Solution:} & set of vertices $S$. \\
+    \textbf{Measure:} & $\maxdeg G[S]$. \\
+    \textbf{Type:} & minimization.
+  \end{tabular}
+\end{definition}
+
+If we change the maximization to minimization in \textsc{Max HDS}, the problem is trivial: always output a singleton set.
+Similarly, if we change the minimization to maximization in \textsc{Min LDS}, the problem is trivial: always output the set of all vertices.
+
+There are also natural two-objective optimization problems here.
+We can optimize on both the min-degree or max-degree and on the cardinality of the set of vertices.
+Let $t_i$ denote either $\min$ or $max$.
+
+\begin{definition}[$(t_1, t_2)$-min-degree problem]
+  \mbox{} \\
+  \begin{tabular}{r p{9.5cm}}
+    \textbf{Instance:} & graph $G$. \\
+    \textbf{Solution:} & set of vertices $S$. \\
+    \textbf{Measure:} & $(|S|, \mindeg G[S])$. \\
+    \textbf{Type:} & $(t_1, t_2)$.
+  \end{tabular}
+\end{definition}
+
+\begin{definition}[$(t_1, t_2)$-max-degree problem]
+  \mbox{} \\
+  \begin{tabular}{r p{9.5cm}}
+    \textbf{Instance:} & graph $G$. \\
+    \textbf{Solution:} & set of vertices $S$. \\
+    \textbf{Measure:} & $(|S|, \maxdeg G[S])$. \\
+    \textbf{Type:} & $(t_1, t_2)$.
+  \end{tabular}
+\end{definition}
+
+Again, choosing $t_2 = \min$ in the first case and $\max$ in the second makes the problem trivial, so we can ignore that setting.
+Thus we will refer to the $(t_1, \max)$-min-degree problem as $(t_1, \max)\dash\textsc{HDS}$ and the $(t_1, \min)$-max-degree problem as $(t_1, \min)\dash\textsc{LDS}$.
+
+For each problem $P$, let $P_1$ denote the first constraint problem and $P_2$ the second.
+In these specific problems, the first constraint problem places a budget on the cardinality of $S$ and the second constraint problem places a budget on the degree bound.
+
+\begin{itemize}
+\item \textsc{Max HDS} is the special case of
+  \begin{itemize}
+  \item $(\min, \max)\dash\textsc{HDS}_1$ when the budget is $|G|$,
+  \item $(\max, \max)\dash\textsc{HDS}_1$ when the budget is zero.
+  \end{itemize}
+\item \textsc{Min LDS} is the special case of
+  \begin{itemize}
+  \item $(\min, \min)\dash\textsc{LDS}_1$ when the budget is $|G|$,
+  \item $(\max, \min)\dash\textsc{LDS}_1$ when the budget is zero.
+  \end{itemize}
+\end{itemize}
+
+%% For the first constraint problems,
+%% \begin{itemize}
+%% \item $(\min, \max)\dash\textsc{HDS}_1$ is the problem of finding the largest min-degree such that there is a sufficiently small induced subgraph of that degree,
+%% \item $(\max, \max)\dash\textsc{HDS}_1$ is the problem of finding the largest min-degree such that there is a sufficiently large induced subgraph of that degree,
+%% \item $(\min, \min)\dash\textsc{LDS}_1$ is the problem of finding the smallest min-degree such that there is a sufficiently small induced subgraph of that degree,
+%% \item $(\max, \min)\dash\textsc{LDS}_1$ is the problem of finding the smallest min-degree such that there is a sufficiently large induced subgraph of that degree.
+%% \end{itemize}
+%% For the second constraint problems,
+
+%% see: Degree-constrained subgraph problems: hardness and approximation results
+% see also: parameterized complexity of finding small degree-constrained subgraphs
+The second constraint problem $(\min, \max)\dash\textsc{HDS}_2$ is the problem of finding the smallest induced subgraph that meets a min-degree lower bound.
+For each degree budget $d$, the optimum value of this measure is called the \emph{$d$-girth} of the graph.
+This problem, denoted $\textsc{MSMD}_d$ in \autocite{appss08}, is in $\NPO$ but not in $\APX$ unless $\P = \NP$.
+If $d = 2$, then this is the problem of finding the shortest cycle in a graph, which is in $\NC$ by modifying an all-pairs shortest paths algorithm to require paths to be of nonzero length.
+
+The second constraint problem $(\max, \max)\dash\textsc{HDS}_2$ is the problem of finding the largest induced subgraph that meets a min-degree lower bound.
+This problem, called the ``High Degree Subgraph Problem'' in \autocite{am84}, is in $\PO$ for each $d \geq 3$, and in $\NC$ for $d < 3$.
+It is also $\frac{1}{2} + \epsilon$-approximable in $\NC$ for any positive epsilon, but not $\frac{1}{2}$-approximable unless $\NC = \P$.
+
+The second constraint problem $(\max, \min)\dash\textsc{LDS}_2$ is the problem of finding the largest induced subgraph that meets a max-degree upper bound.
+The maximum independent set problem is the special case where the degree upper bound is zero, thus this optimization problem inherits the inapproximability results of maximum independent set, for example, it is inapproximable within $n^{1/2 - \epsilon}$ for any positive real epsilon, unless $\P = \NP$.
+
+The second constraint problem $(\min, \min)\dash\textsc{LDS}_2$ is the problem of finding the smallest induced subgraph that meets a max-degree upper bound.
+\todo{
+  Is this problem the ``complement'' of $(\max, \max)\dash\textsc{HDS}_2$?
+  Maybe we can show it with the budget form of the problems.
+}
+
+\todo{find something interesting about the remaining constraint problems}
+
+\section{Parameterized problems}
+
+The natural parameterization for the single-objective optimization problems is denoted $\pd\textsc{Max HDS}$ and $\pd\textsc{Min LDS}$.
+\todo{what about them?}
+
+The natural parameterization $\pd(\min, \max)\dash\textsc{HDS}_2$, denoted $k\textsc{SMD}d$ in \autocite{ass12}, is $\W[1]$-hard for each fixed $d$ greater than three.
+
+The natural parameterization $\pd(\max, \max)\dash\textsc{HDS}_2$ is what I'm really interested in.
+Since the second constraint problem is in $\PO$ (see the previous section), the parameterized problem is in $\FPT$.
+I want to know whether the problem is in $\FPP$ or not.
+
+The natural parameterization $\pd(\max, \min)\dash\textsc{LDS}_2$, is a generalization of the parameterized maximum independent set problem, so it inherits the fixed-parameter intractability of that problem, for example, it is $\W[1]$-hard.
+
+\todo{find something interesting about the remaining second constraint problems and the first constraint problems}
+
+\todo{Another problem, must have $|S| = k$ to get membership in $W[P]$; Max HDS is not monotone}
+
+\section{Budget problems}
+
+The budget problems for the single-objective optimization problems are
+\begin{align*}
+  \textsc{Max HDS}_b & = \{ (G, d) \, | \exists S \subseteq V \colon \mindeg G[S] \geq d\}, \\
+  \textsc{Min LDS}_b & = \{ (G, d) \, | \exists S \subseteq V \colon \maxdeg G[S] \leq d\}.
+\end{align*}
+For the two-objective optimization problems, the budget problem depends on the type of optimization.
+
+\begin{theorem}[{\autocite{am84}}]
+  $\textsc{Max HDS}_b$ is $\P$-complete.
+\end{theorem}
+
+\begin{theorem}
+  $\textsc{Min LDS}_b$ is ???
+\end{theorem}
+
+The budget problem $(\min, \max)\dash\textsc{HDS}_b$ is problem of finding a small induced subgraph of high degree.
+
+The budget problem $(\max, \max)\dash\textsc{HDS}_b$ is the problem of finding a large induced subgraph of high degree.
+
+The budget problem $(\min, \min)\dash\textsc{LDS}_b$ is the problem of finding a small induced subgraph of low degree.
+
+The budget problem $(\max, \min)\dash\textsc{LDS}_b$ is the problem of finding a large induced subgraph of low degree.
+This problem, called the ``Low Degree Subgraph Problem'' in \autocite[Definition~4.4]{greenlaw89}, is $\NP$-complete by a reduction from the independent set problem.
+
+\section{Related problems}
+
+\autocite{greenlaw89} observes that the reduction $(G, k) \mapsto (\overline{G}, k)$ does not suffice to prove the equivalence of $\textsc{Max HDS}_b$ and $\textsc{Min LDS}_b$, as one might expect from the equivalence of the clique problem and the independent set problem.
+This is because $\textsc{Min LDS}_b$ is a generalization of the problem that would support this reduction.
+Let
+\[
+\textsc{Min LDS}_b' = \{ (G, d) \, | \, \exists S \subseteq V \colon \maxdeg G[S] \leq (|S| - 1) - d\}.
+\]
+
+\begin{theorem}
+  $\textsc{Max HDS}_b$ and $\textsc{Min LDS}_b'$ are equivalent under $\AC^0$ many-one reductions.
+\end{theorem}
+\begin{proof}
+  The reduction in both directions is $(G, d) \mapsto (\overline{G}, d)$.
+  Assuming the graph is given as an adjacency matrix, the graph complement is computable by a uniform family of circuits that simply negates each of the bits (except those on the diagonal), which can be done by a depth one circuit with $O(n^2)$ gates.
+  The correctness of the reduction follows from \autoref{lem:minmax}.
+\end{proof}
+
+\begin{corollary}
+  $\textsc{Min LDS}'_b$ is $\P$-complete.
+\end{corollary}
+\begin{proof}
+  The high degree subgraph problem is $\P$-complete \autocite{am84} and the problems are equivalent by the previous theorem.
+\end{proof}
+
+Similarly, just as incorporating the cardinality of the subset in the low degree subgraph problem makes the problem easy, incorporating the cardinality of the subset in the high degree subgraph makes it $\NP$-complete FILL ME IN!!!
+
+%% Print the bibliography section here.
+\printbibliography
+
+\end{document}
